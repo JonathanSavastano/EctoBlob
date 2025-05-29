@@ -43,6 +43,7 @@ function checkCollision(spriteA, spriteB) {
   const growpotTexture = await(Assets.load('assets/items/growpot.png'));
   const growpotNum = 5;
   let growpotSprites = [];
+  let growpotPositions = [];
 
   function spawnGrowPots() {
     for (let i = 0; i < growpotNum; i++) {
@@ -53,6 +54,7 @@ function checkCollision(spriteA, spriteB) {
       growpotSprite.y = Math.random() * window.innerHeight - window.innerHeight / 2;
       container.addChild(growpotSprite);
       growpotSprites.push(growpotSprite);
+      growpotPositions.push({ x: growpotSprite.x, y: growpotSprite.y });
     }
   }
 
@@ -69,7 +71,6 @@ function checkCollision(spriteA, spriteB) {
       }
     });
   });
-  
 
   // Load all blob textures asynchronously
   const textures = await Promise.all([
@@ -79,6 +80,25 @@ function checkCollision(spriteA, spriteB) {
     Assets.load('assets/Character/Blob3.png'),
     Assets.load('assets/Character/Blob4.png'),
   ]);
+
+  // Lab Guy texture and sprite
+  const maxLabGuys = 3;
+  let labGuySprites = [];
+  const labGuyTexture = await(Assets.load('assets/Character/labguy.png'));
+
+  function spawnLabGuys() {
+    for (let i = 0; i < maxLabGuys; i++) {
+      const labGuySprite = new Sprite(labGuyTexture);
+      labGuySprite.scale.set(0.25);
+      labGuySprite.anchor.set(0.5);
+      labGuySprite.x = Math.random() * window.innerWidth - window.innerWidth / 2;
+      labGuySprite.y = Math.random() * window.innerHeight - window.innerHeight / 2;
+      container.addChild(labGuySprite);
+      labGuySprites.push(labGuySprite);
+    }
+  }
+
+  spawnLabGuys();
 
   // splash
   const splashTextures = await Promise.all([
@@ -117,7 +137,7 @@ function checkCollision(spriteA, spriteB) {
   fpsText.x = 10;
   fpsText.y = 10;
   app.stage.addChild(fpsText);
-
+  // fps
   function refreshLoop() {
     window.requestAnimationFrame(() => {
       const now = performance.now();
@@ -191,6 +211,36 @@ function checkCollision(spriteA, spriteB) {
       blob.scale.x += growBy;
       blob.scale.y += growBy;
       growpotSprites[i].visible = false;
+      }
+    }
+
+    // move labGuys to growpots
+    for (let i = 0; i < labGuySprites.length; i++) {
+      const labGuy = labGuySprites[i];
+      // Find the closest visible growpot
+      let minDist = Infinity;
+      let target = null;
+      for (let j = 0; j < growpotSprites.length; j++) {
+        if (!growpotSprites[j].visible) continue;
+        const pos = growpotPositions[j];
+        const dx = pos.x - labGuy.x;
+        const dy = pos.y - labGuy.y;
+        const dist = Math.sqrt(dx * dx + dy * dy);
+        if (dist < minDist) {
+          minDist = dist;
+          target = pos;
+        }
+      }
+      if (target) {
+        const dx = target.x - labGuy.x;
+        const dy = target.y - labGuy.y;
+        const dist = Math.sqrt(dx * dx + dy * dy);
+        if (dist > 1) {
+          const moveX = (dx / dist) * 2;
+          const moveY = (dy / dist) * 2;
+          labGuy.x += moveX;
+          labGuy.y += moveY;
+        }
       }
     }
 
