@@ -46,6 +46,8 @@ function checkCollision(spriteA, spriteB) {
   let growpotPositions = [];
 
   function spawnGrowPots() {
+    // Clear previous positions
+    growpotPositions = [];
     for (let i = 0; i < growpotNum; i++) {
       const growpotSprite = new Sprite(growpotTexture);
       growpotSprite.scale.set(0.25);
@@ -212,23 +214,26 @@ function checkCollision(spriteA, spriteB) {
       blob.scale.y += growBy;
       growpotSprites[i].visible = false;
       }
+      for (let j = 0; j < labGuySprites.length; j++) {
+        if (checkCollision(labGuySprites[j], growpotSprites[i])) {
+          growpotSprites[i].visible = false;
+        }
+      }
     }
-
-    // move labGuys to growpots
     for (let i = 0; i < labGuySprites.length; i++) {
       const labGuy = labGuySprites[i];
-      // Find the closest visible growpot
+      // Find the closest visible growpot (use sprite position, not growpotPositions)
       let minDist = Infinity;
       let target = null;
       for (let j = 0; j < growpotSprites.length; j++) {
         if (!growpotSprites[j].visible) continue;
-        const pos = growpotPositions[j];
-        const dx = pos.x - labGuy.x;
-        const dy = pos.y - labGuy.y;
+        const sprite = growpotSprites[j];
+        const dx = sprite.x - labGuy.x;
+        const dy = sprite.y - labGuy.y;
         const dist = Math.sqrt(dx * dx + dy * dy);
         if (dist < minDist) {
           minDist = dist;
-          target = pos;
+          target = sprite;
         }
       }
       if (target) {
@@ -240,8 +245,8 @@ function checkCollision(spriteA, spriteB) {
           const moveY = (dy / dist) * 2;
           labGuy.x += moveX;
           labGuy.y += moveY;
-        }
       }
+    }
     }
 
     // Check if blob's bounds exceed the screen size (win condition)
