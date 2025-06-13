@@ -10,7 +10,8 @@
     "dev": "vite"
   },
   "dependencies": {
-    "pixi.js": "^8.8.1"
+    "pixi.js": "^8.8.1",
+    "howler": "^2.2.4"
   },
   "devDependencies": {
     "@eslint/js": "^9.21.0",
