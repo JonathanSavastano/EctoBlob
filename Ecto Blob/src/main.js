@@ -1,20 +1,27 @@
-import { Application, Sprite, Assets, Container, Text, TextStyle } from "pixi.js";
-import {Howl} from 'howler';
+import {
+  Application,
+  Sprite,
+  Assets,
+  Container,
+  Text,
+  TextStyle,
+} from "pixi.js";
+import { Howl } from "howler";
 
 // sound effects
 var glassBreak = new Howl({
-  src: ['assets/sounds/Bottle Break.wav'],
-  volume: 0.5
+  src: ["assets/sounds/Bottle Break.wav"],
+  volume: 0.5,
 });
 var glassGet = new Howl({
-  src: ['assets/sounds/impsplat/impactsplat08.mp3']
+  src: ["assets/sounds/impsplat/impactsplat08.mp3"],
 });
 var bumpGuy = new Howl({
-  src: ['assets/sounds/impsplat/impactsplat03.mp3'],
-  volume: 0.5
+  src: ["assets/sounds/impsplat/impactsplat03.mp3"],
+  volume: 0.5,
 });
 var loseSound = new Howl({
-  src: ['assets/sounds/impsplat/impactsplat01.mp3']
+  src: ["assets/sounds/impsplat/impactsplat01.mp3"],
 });
 
 // check collision
@@ -22,32 +29,37 @@ function checkCollision(spriteA, spriteB) {
   const boundsA = spriteA.getBounds();
   const boundsB = spriteB.getBounds();
 
-  return(
+  return (
     boundsA.x < boundsB.x + boundsB.width &&
     boundsA.x + boundsA.width > boundsB.x &&
     boundsA.y < boundsB.y + boundsB.height &&
     boundsA.y + boundsA.height > boundsB.y
   );
 }
-  
+
 let gameStarted = false;
 
 (async () => {
   // Create a new application
   const app = new Application();
   // Initialize the application
-  await app.init({ background: "#f2f2f2", width: 800, height: 600, resizeTo: window });
+  await app.init({
+    background: "#f2f2f2",
+    width: 800,
+    height: 600,
+    resizeTo: window,
+  });
 
   // Append the application canvas to the document body
   document.getElementById("pixi-container").appendChild(app.canvas);
 
-   // Disable movement and gameplay until click
+  // Disable movement and gameplay until click
   function startGame() {
-    const instructions = document.getElementById('remove-me');
-    instructions.style.display = 'none';
+    const instructions = document.getElementById("remove-me");
+    instructions.style.display = "none";
     if (gameStarted) return;
     gameStarted = true;
-    
+
     // Start the main ticker loop
     app.ticker.start();
   }
@@ -63,7 +75,7 @@ let gameStarted = false;
   app.stage.addChild(container);
 
   // BACKGROUND
-  const bgTexture = await(Assets.load('assets/backgrounds/tiles.png'));
+  const bgTexture = await Assets.load("assets/backgrounds/tiles.png");
   const bgSprite = new Sprite(bgTexture);
   container.addChild(bgSprite);
   bgSprite.anchor.set(0.5);
@@ -72,7 +84,7 @@ let gameStarted = false;
   const bgBounds = bgSprite.getBounds();
 
   // GROW POTION
-  const growpotTexture = await(Assets.load('assets/items/growpot.png'));
+  const growpotTexture = await Assets.load("assets/items/growpot.png");
   const growpotNum = 5;
   let growpotSprites = [];
   let growpotPositions = [];
@@ -84,8 +96,10 @@ let gameStarted = false;
       const growpotSprite = new Sprite(growpotTexture);
       growpotSprite.scale.set(0.25);
       growpotSprite.anchor.set(0.5);
-      growpotSprite.x = Math.random() * window.innerWidth - window.innerWidth / 2;
-      growpotSprite.y = Math.random() * window.innerHeight - window.innerHeight / 2;
+      growpotSprite.x =
+        Math.random() * window.innerWidth - window.innerWidth / 2;
+      growpotSprite.y =
+        Math.random() * window.innerHeight - window.innerHeight / 2;
       container.addChild(growpotSprite);
       growpotSprites.push(growpotSprite);
       growpotPositions.push({ x: growpotSprite.x, y: growpotSprite.y });
@@ -97,9 +111,9 @@ let gameStarted = false;
   // If all growpotSprites are invisible, spawn more
   app.ticker.addOnce(() => {
     app.ticker.add(() => {
-      if (growpotSprites.every(sprite => !sprite.visible)) {
+      if (growpotSprites.every((sprite) => !sprite.visible)) {
         // Remove old sprites from container
-        growpotSprites.forEach(sprite => container.removeChild(sprite));
+        growpotSprites.forEach((sprite) => container.removeChild(sprite));
         growpotSprites = [];
         spawnGrowPots();
       }
@@ -108,25 +122,27 @@ let gameStarted = false;
 
   // Load all blob textures asynchronously
   const textures = await Promise.all([
-    Assets.load('assets/Character/Blob.png'),
-    Assets.load('assets/Character/Blob1.png'),
-    Assets.load('assets/Character/Blob2.png'),
-    Assets.load('assets/Character/Blob3.png'),
-    Assets.load('assets/Character/Blob4.png'),
+    Assets.load("assets/Character/Blob.png"),
+    Assets.load("assets/Character/Blob1.png"),
+    Assets.load("assets/Character/Blob2.png"),
+    Assets.load("assets/Character/Blob3.png"),
+    Assets.load("assets/Character/Blob4.png"),
   ]);
 
   // Lab Guy texture and sprite
   const maxLabGuys = 3;
   let labGuySprites = [];
-  const labGuyTexture = await(Assets.load('assets/Character/labguy.png'));
+  const labGuyTexture = await Assets.load("assets/Character/labguy.png");
 
   function spawnLabGuys() {
     for (let i = 0; i < maxLabGuys; i++) {
       const labGuySprite = new Sprite(labGuyTexture);
       labGuySprite.scale.set(0.25);
       labGuySprite.anchor.set(0.5);
-      labGuySprite.x = Math.random() * window.innerWidth - window.innerWidth / 2;
-      labGuySprite.y = Math.random() * window.innerHeight - window.innerHeight / 2;
+      labGuySprite.x =
+        Math.random() * window.innerWidth - window.innerWidth / 2;
+      labGuySprite.y =
+        Math.random() * window.innerHeight - window.innerHeight / 2;
       container.addChild(labGuySprite);
       labGuySprites.push(labGuySprite);
     }
@@ -136,12 +152,12 @@ let gameStarted = false;
 
   // splash
   const splashTextures = await Promise.all([
-    Assets.load('assets/backgrounds/splash.png'),
-    Assets.load('assets/backgrounds/splash1.png'),
-    Assets.load('assets/backgrounds/splash2.png'),
-    Assets.load('assets/backgrounds/splash3.png'),
-    Assets.load('assets/backgrounds/splash4.png'),
-    Assets.load('assets/backgrounds/splash5.png'),
+    Assets.load("assets/backgrounds/splash.png"),
+    Assets.load("assets/backgrounds/splash1.png"),
+    Assets.load("assets/backgrounds/splash2.png"),
+    Assets.load("assets/backgrounds/splash3.png"),
+    Assets.load("assets/backgrounds/splash4.png"),
+    Assets.load("assets/backgrounds/splash5.png"),
   ]);
 
   const splashSprite = new Sprite(splashTextures[0]);
@@ -176,32 +192,32 @@ let gameStarted = false;
   });
 
   // MAIN RENDERING UPDATE LOOP
-  app.ticker.add((delta) => {
+  app.ticker.add(() => {
     if (!gameStarted) return;
     // Shrink the blob every 2 seconds
     if (!app.lastShrinkTime) app.lastShrinkTime = app.ticker.lastTime;
     if (app.ticker.lastTime - app.lastShrinkTime >= 2000) {
-      blob.scale.x = Math.max(0.10, blob.scale.x - 0.50);
-      blob.scale.y = Math.max(0.10, blob.scale.y - 0.50);
+      blob.scale.x = Math.max(0.1, blob.scale.x - 0.5);
+      blob.scale.y = Math.max(0.1, blob.scale.y - 0.5);
       app.lastShrinkTime = app.ticker.lastTime;
     }
 
     // Check for lose condition
-    if (blob.scale.x <= 0.10 || blob.scale.y <= 0.10) {
+    if (blob.scale.x <= 0.1 || blob.scale.y <= 0.1) {
       loseSound.play();
       container.addChild(splashSprite);
       splashSprite.anchor = 0.5;
       app.ticker.stop();
       const loseText = new Text({
-      text: "YOU LOSE!",
-      style: new TextStyle({
-        fontFamily: "Arial",
-        fontSize: 64,
-        fill: "#AA0000",
-        fontWeight: "bold",
-        stroke: "#FFFFFF",
-        strokeDeprecated: { thickness: 6 },
-      }),
+        text: "YOU LOSE!",
+        style: new TextStyle({
+          fontFamily: "Arial",
+          fontSize: 64,
+          fill: "#AA0000",
+          fontWeight: "bold",
+          stroke: "#FFFFFF",
+          strokeDeprecated: { thickness: 6 },
+        }),
       });
       loseText.anchor.set(0.5);
       loseText.x = app.screen.width / 2;
@@ -211,11 +227,11 @@ let gameStarted = false;
     // handle grow pot collision
     for (let i = 0; i < growpotSprites.length; i++) {
       if (checkCollision(blob, growpotSprites[i])) {
-      glassGet.play();
-      let growBy = 0.65;
-      blob.scale.x += growBy;
-      blob.scale.y += growBy;
-      growpotSprites[i].visible = false;
+        glassGet.play();
+        let growBy = 0.65;
+        blob.scale.x += growBy;
+        blob.scale.y += growBy;
+        growpotSprites[i].visible = false;
       }
       for (let j = 0; j < labGuySprites.length; j++) {
         if (checkCollision(labGuySprites[j], growpotSprites[i])) {
@@ -242,16 +258,16 @@ let gameStarted = false;
           otherLabGuy.y -= (dy / dist) * pushAmount;
         }
         if (checkCollision(blob, labGuySprites[i])) {
-        bumpGuy.play();
-        // Calculate direction from blob to labGuy
-        const dx = labGuySprites[i].x - blob.x;
-        const dy = labGuySprites[i].y - blob.y;
-        const dist = Math.sqrt(dx * dx + dy * dy) || 1;
-        // Knock the labGuy away from the blob
-        const knockback = 80;
-        labGuySprites[i].x += (dx / dist) * knockback;
-        labGuySprites[i].y += (dy / dist) * knockback;
-      }
+          bumpGuy.play();
+          // Calculate direction from blob to labGuy
+          const dx = labGuySprites[i].x - blob.x;
+          const dy = labGuySprites[i].y - blob.y;
+          const dist = Math.sqrt(dx * dx + dy * dy) || 1;
+          // Knock the labGuy away from the blob
+          const knockback = 80;
+          labGuySprites[i].x += (dx / dist) * knockback;
+          labGuySprites[i].y += (dy / dist) * knockback;
+        }
       }
       const labGuy = labGuySprites[i];
       // Find the closest visible growpot (use sprite position, not growpotPositions)
@@ -277,8 +293,8 @@ let gameStarted = false;
           const moveY = (dy / dist) * 2;
           labGuy.x += moveX;
           labGuy.y += moveY;
+        }
       }
-    }
     }
 
     // Check if blob's bounds exceed the screen size (win condition)
@@ -289,15 +305,15 @@ let gameStarted = false;
     ) {
       app.ticker.stop();
       const winText = new Text({
-      text: "YOU WON!",
-      style: new TextStyle({
-        fontFamily: "Arial",
-        fontSize: 64,
-        fill: "#00AA00",
-        fontWeight: "bold",
-        stroke: "#FFFFFF",
-        strokeDeprecated: { thickness: 6 },
-      }),
+        text: "YOU WON!",
+        style: new TextStyle({
+          fontFamily: "Arial",
+          fontSize: 64,
+          fill: "#00AA00",
+          fontWeight: "bold",
+          stroke: "#FFFFFF",
+          strokeDeprecated: { thickness: 6 },
+        }),
       });
       winText.anchor.set(0.5);
       winText.x = app.screen.width / 2;
@@ -334,7 +350,10 @@ let gameStarted = false;
 
     // Animate texture frame (for blob)
     const frameDuration = 600; // milliseconds per frame (increase for slower change)
-    if (Math.floor(app.ticker.lastTime / frameDuration) % textures.length !== frame) {
+    if (
+      Math.floor(app.ticker.lastTime / frameDuration) % textures.length !==
+      frame
+    ) {
       frame = Math.floor(app.ticker.lastTime / frameDuration) % textures.length;
       blob.texture = textures[frame];
     }
