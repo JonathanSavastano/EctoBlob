@@ -1,4 +1,16 @@
 import { Application, Sprite, Assets, Container, Text, TextStyle } from "pixi.js";
+import {Howl} from 'howler';
+
+// sound effects
+var glassBreak = new Howl({
+  src: ['assets/sounds/Bottle Break.wav']
+});
+var glassGet = new Howl({
+  src: ['assets/sounds/impsplat/impactsplat08.mp3']
+});
+var bumpGuy = new Howl({
+  src: ['assets/sounds/impsplat/impactsplat03.mp3']
+});
 
 // check collision
 function checkCollision(spriteA, spriteB) {
@@ -205,22 +217,51 @@ function checkCollision(spriteA, spriteB) {
       loseText.y = app.screen.height / 2;
       app.stage.addChild(loseText);
     }
-    
     // handle grow pot collision
     for (let i = 0; i < growpotSprites.length; i++) {
       if (checkCollision(blob, growpotSprites[i])) {
-      let growBy = 0.50;
+      glassGet.play();
+      let growBy = 0.65;
       blob.scale.x += growBy;
       blob.scale.y += growBy;
       growpotSprites[i].visible = false;
       }
       for (let j = 0; j < labGuySprites.length; j++) {
         if (checkCollision(labGuySprites[j], growpotSprites[i])) {
+          glassBreak.play();
           growpotSprites[i].visible = false;
         }
       }
     }
     for (let i = 0; i < labGuySprites.length; i++) {
+      // Handle collision between labGuySprites to prevent overlap
+      for (let j = 0; j < labGuySprites.length; j++) {
+        if (i === j) continue;
+        const otherLabGuy = labGuySprites[j];
+        if (checkCollision(labGuySprites[i], otherLabGuy)) {
+          // Calculate direction to push them apart
+          const dx = labGuySprites[i].x - otherLabGuy.x;
+          const dy = labGuySprites[i].y - otherLabGuy.y;
+          const dist = Math.sqrt(dx * dx + dy * dy) || 1;
+          // Move each labGuy slightly away from each other
+          const pushAmount = 2;
+          labGuySprites[i].x += (dx / dist) * pushAmount;
+          labGuySprites[i].y += (dy / dist) * pushAmount;
+          otherLabGuy.x -= (dx / dist) * pushAmount;
+          otherLabGuy.y -= (dy / dist) * pushAmount;
+        }
+        if (checkCollision(blob, labGuySprites[i])) {
+        bumpGuy.play();
+        // Calculate direction from blob to labGuy
+        const dx = labGuySprites[i].x - blob.x;
+        const dy = labGuySprites[i].y - blob.y;
+        const dist = Math.sqrt(dx * dx + dy * dy) || 1;
+        // Knock the labGuy away from the blob
+        const knockback = 40;
+        labGuySprites[i].x += (dx / dist) * knockback;
+        labGuySprites[i].y += (dy / dist) * knockback;
+      }
+      }
       const labGuy = labGuySprites[i];
       // Find the closest visible growpot (use sprite position, not growpotPositions)
       let minDist = Infinity;
