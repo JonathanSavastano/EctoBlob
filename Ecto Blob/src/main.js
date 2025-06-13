@@ -3,13 +3,18 @@ import {Howl} from 'howler';
 
 // sound effects
 var glassBreak = new Howl({
-  src: ['assets/sounds/Bottle Break.wav']
+  src: ['assets/sounds/Bottle Break.wav'],
+  volume: 0.5
 });
 var glassGet = new Howl({
   src: ['assets/sounds/impsplat/impactsplat08.mp3']
 });
 var bumpGuy = new Howl({
-  src: ['assets/sounds/impsplat/impactsplat03.mp3']
+  src: ['assets/sounds/impsplat/impactsplat03.mp3'],
+  volume: 0.5
+});
+var loseSound = new Howl({
+  src: ['assets/sounds/impsplat/impactsplat01.mp3']
 });
 
 // check collision
@@ -24,17 +29,32 @@ function checkCollision(spriteA, spriteB) {
     boundsA.y + boundsA.height > boundsB.y
   );
 }
-
+  
+let gameStarted = false;
 
 (async () => {
   // Create a new application
   const app = new Application();
-
   // Initialize the application
   await app.init({ background: "#f2f2f2", width: 800, height: 600, resizeTo: window });
 
   // Append the application canvas to the document body
   document.getElementById("pixi-container").appendChild(app.canvas);
+
+   // Disable movement and gameplay until click
+  function startGame() {
+    const instructions = document.getElementById('remove-me');
+    instructions.style.display = 'none';
+    if (gameStarted) return;
+    gameStarted = true;
+    
+    // Start the main ticker loop
+    app.ticker.start();
+  }
+
+  // Pause ticker initially
+  app.ticker.stop();
+  window.addEventListener("click", startGame, { once: true });
 
   // CONTAINER
   const container = new Container();
@@ -133,38 +153,10 @@ function checkCollision(spriteA, spriteB) {
   blob.y = 0;
   container.addChild(blob);
 
-  // fps vars
   let frame = 0;
-  let elapsed = 0;
-  const times = [];
-  let fps = 0;
 
-  // displaying FPS
-  const fpsText = new Text({
-    text: "FPS: 0",
-    style: new TextStyle({
-      fontFamily: "Arial",
-      fontSize: 24,
-      fill: "#000000",
-    }),
-  });
-  fpsText.x = 10;
-  fpsText.y = 10;
-  app.stage.addChild(fpsText);
-  // fps
-  function refreshLoop() {
-    window.requestAnimationFrame(() => {
-      const now = performance.now();
-      while (times.length > 0 && times[0] <= now - 1000) {
-        times.shift();
-      }
-      times.push(now);
-      fps = times.length;
-      `${fps}`;
-      refreshLoop();
-    });
-  }
-  refreshLoop();
+  // set initial blob scale
+  blob.scale.set(2);
 
   // Movement handling
   const keys = {
@@ -175,19 +167,17 @@ function checkCollision(spriteA, spriteB) {
   };
   const speed = 5;
   window.addEventListener("keydown", (e) => {
+    if (!gameStarted) return;
     if (e.key in keys) keys[e.key] = true;
   });
   window.addEventListener("keyup", (e) => {
+    if (!gameStarted) return;
     if (e.key in keys) keys[e.key] = false;
   });
 
-  // set initial blob scale
-  blob.scale.set(2);
-
   // MAIN RENDERING UPDATE LOOP
   app.ticker.add((delta) => {
-    fpsText.text = `FPS: ${fps}`;
-    elapsed += delta;
+    if (!gameStarted) return;
     // Shrink the blob every 2 seconds
     if (!app.lastShrinkTime) app.lastShrinkTime = app.ticker.lastTime;
     if (app.ticker.lastTime - app.lastShrinkTime >= 2000) {
@@ -198,6 +188,7 @@ function checkCollision(spriteA, spriteB) {
 
     // Check for lose condition
     if (blob.scale.x <= 0.10 || blob.scale.y <= 0.10) {
+      loseSound.play();
       container.addChild(splashSprite);
       splashSprite.anchor = 0.5;
       app.ticker.stop();
@@ -209,7 +200,7 @@ function checkCollision(spriteA, spriteB) {
         fill: "#AA0000",
         fontWeight: "bold",
         stroke: "#FFFFFF",
-        strokeThickness: 6,
+        strokeDeprecated: { thickness: 6 },
       }),
       });
       loseText.anchor.set(0.5);
@@ -257,7 +248,7 @@ function checkCollision(spriteA, spriteB) {
         const dy = labGuySprites[i].y - blob.y;
         const dist = Math.sqrt(dx * dx + dy * dy) || 1;
         // Knock the labGuy away from the blob
-        const knockback = 40;
+        const knockback = 80;
         labGuySprites[i].x += (dx / dist) * knockback;
         labGuySprites[i].y += (dy / dist) * knockback;
       }
@@ -305,7 +296,7 @@ function checkCollision(spriteA, spriteB) {
         fill: "#00AA00",
         fontWeight: "bold",
         stroke: "#FFFFFF",
-        strokeThickness: 6,
+        strokeDeprecated: { thickness: 6 },
       }),
       });
       winText.anchor.set(0.5);
